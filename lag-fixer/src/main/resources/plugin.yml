@@ -1,0 +1,16 @@
+name: LagFixer
+version: 1.0.0
+main: com.example.lagfixer.LagFixer
+api-version: '1.21'
+description: Spawn villagers by profession or with preset enchanted book trades.
+commands:
+  villager:
+    description: Open the villager menu or give a villager to a player.
+    usage: /villager [give <player> <type> [amount]]
+permissions:
+  villager.use:
+    description: Open the /villager menu
+    default: op
+  villager.give:
+    description: Spawn villagers via the menu or /villager give
+    default: op
