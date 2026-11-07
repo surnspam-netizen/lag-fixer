@@ -1,19 +1,44 @@
-3s
-Run mvn -B package
-[INFO] Scanning for projects...
-[INFO] ------------------------------------------------------------------------
-[ERROR] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  0.121 s
-[INFO] Finished at: 2026-11-07T19:31:25Z
-[INFO] ------------------------------------------------------------------------
-[ERROR] The goal you specified requires a project to execute but there is no POM in this directory (/home/runner/work/lag-fixer/lag-fixer). Please verify you invoked Maven from the correct directory. -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MissingProjectException
-Error: Process completed with exit code 1.
+name: Build LagFixer
 
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request: {}
+  workflow_dispatch: {}
 
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: lag-fixer/pom.xml
+
+      - name: Build with Maven
+        run: mvn -B package
+        working-directory: lag-fixer
+
+      - name: Upload jar artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: LagFixer
+          path: lag-fixer/target/*.jar
+          if-no-files-found: error
+
+      - name: Publish release (on version tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lag-fixer/target/*.jar
+          generate_release_notes: true
